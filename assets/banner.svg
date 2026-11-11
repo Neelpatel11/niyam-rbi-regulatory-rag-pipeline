@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 320" role="img" aria-labelledby="title desc">
+  <title id="title">Niyam</title>
+  <desc id="desc">Niyam: answers from RBI regulations, every claim cited and checked.</desc>
+  <rect width="1280" height="320" fill="#14213D"/>
+  <g transform="translate(96 96)">
+    <rect width="128" height="128" rx="28" fill="#1D2E52"/>
+    <path d="M30 30h-8v68h8" fill="none" stroke="#F2A541" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M98 30h8v68h-8" fill="none" stroke="#F2A541" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M44 92V36l40 56V36" fill="none" stroke="#F8F5EE" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <text x="268" y="168" fill="#F8F5EE" font-family="Georgia, 'Times New Roman', serif" font-size="88" letter-spacing="1">niyam</text>
+  <text x="272" y="216" fill="#C9D1E3" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="26">Answers from RBI regulations. Every claim cited, every citation checked.</text>
+  <g font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="18" fill="#F2A541">
+    <text x="272" y="262">hybrid retrieval · reranking · time-aware · refuses when unsure · measured</text>
+  </g>
+</svg>

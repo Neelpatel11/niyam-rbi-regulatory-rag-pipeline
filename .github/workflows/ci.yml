@@ -1,0 +1,127 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.12"
+  HF_HUB_DISABLE_PROGRESS_BARS: "1"
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - run: uv sync --all-extras --group dev
+      - run: uv run ruff check src tests
+      - run: uv run ruff format --check src tests
+      - run: uv run mypy
+
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:0.8.7-pg17
+        env:
+          POSTGRES_USER: niyam
+          POSTGRES_PASSWORD: niyam
+          POSTGRES_DB: niyam
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U niyam" --health-interval 5s --health-timeout 3s --health-retries 20
+    env:
+      NIYAM_TEST_DATABASE_URL: postgresql://niyam:niyam@localhost:5432/niyam
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - run: uv sync --all-extras --group dev
+      - run: uv run pytest --cov=niyam --cov-report=term-missing
+
+  eval-smoke:
+    needs: test
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:0.8.7-pg17
+        env:
+          POSTGRES_USER: niyam
+          POSTGRES_PASSWORD: niyam
+          POSTGRES_DB: niyam
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U niyam" --health-interval 5s --health-timeout 3s --health-retries 20
+    env:
+      NIYAM_DATABASE_URL: postgresql://niyam:niyam@localhost:5432/niyam
+      NIYAM_DATA_DIR: data
+      NIYAM_LOG_LEVEL: WARNING
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - run: uv sync --all-extras --group dev
+      - uses: actions/cache@v4
+        with:
+          path: data/models
+          key: models-${{ hashFiles('evals/configs/ablations.yaml') }}
+      - name: Index the fixture corpus
+        run: |
+          uv run niyam ingest local tests/fixtures/corpus -c structure-v1 -c fixed-512
+          uv run niyam embed -c structure-v1
+          uv run niyam embed -c fixed-512
+      - name: Retrieval smoke evaluation (gated)
+        run: |
+          uv run niyam eval run --golden evals/smoke.jsonl \
+            -n dense-fixed -n dense-structure -n hybrid -n hybrid-rerank \
+            --out evals/results/ci \
+            --gate "recall@5>=0.95" \
+            --gate "hybrid-rerank:refusal_f1>=0.8"
+      - name: Publish the table to the job summary
+        if: always()
+        run: cat evals/results/ci/latest_retrieval.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smoke-eval
+          path: evals/results/ci
+
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run build
+
+  docker:
+    needs: [lint, test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          build-args: PRELOAD_MODELS=false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

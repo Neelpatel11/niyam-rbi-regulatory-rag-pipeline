@@ -1,0 +1,5 @@
+project_id   = "your-gcp-project"
+region       = "asia-south1"
+api_image    = "asia-south1-docker.pkg.dev/your-gcp-project/niyam/api:latest"
+web_image    = "asia-south1-docker.pkg.dev/your-gcp-project/niyam/web:latest"
+cors_origins = ["https://niyam-web-xxxxxxxx-el.a.run.app"]

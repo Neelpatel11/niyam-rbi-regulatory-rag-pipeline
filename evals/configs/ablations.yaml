@@ -1,0 +1,47 @@
+# Each entry overrides the defaults. Retrieval fields map onto niyam.retrieval.RetrievalConfig.
+# Turn one component on at a time so every row isolates a single change.
+
+defaults:
+  embedding_provider: fastembed
+  embedding_model: BAAI/bge-small-en-v1.5
+  chunk_set: structure-v1
+  query_rewrite: false
+
+configs:
+  - name: dense-fixed
+    description: Dense retrieval only, fixed 512-token chunks.
+    chunk_set: fixed-512
+    use_lexical: false
+    use_rerank: false
+
+  - name: dense-structure
+    description: Dense retrieval only, structure-aware chunks.
+    use_lexical: false
+    use_rerank: false
+
+  - name: lexical-structure
+    description: Postgres full-text search only.
+    use_dense: false
+    use_rerank: false
+
+  - name: hybrid
+    description: Dense + full-text, fused with RRF (k=60).
+    use_rerank: false
+
+  - name: hybrid-rerank
+    description: Hybrid, then a MiniLM cross-encoder over the top 20.
+    rerank_model: Xenova/ms-marco-MiniLM-L-6-v2
+
+  - name: hybrid-rerank-bge
+    description: Hybrid, then bge-reranker-v2-m3 (int8) over the top 20.
+    rerank_model: BAAI/bge-reranker-v2-m3-int8
+
+  - name: hybrid-rerank-rewrite
+    description: Hybrid + MiniLM reranker + LLM query rewriting for follow-ups and dated questions.
+    rerank_model: Xenova/ms-marco-MiniLM-L-6-v2
+    query_rewrite: true
+
+  - name: hybrid-rerank-bge-base
+    description: Same as hybrid-rerank with bge-base-en-v1.5 embeddings (run `niyam embed --model BAAI/bge-base-en-v1.5` first).
+    embedding_model: BAAI/bge-base-en-v1.5
+    rerank_model: Xenova/ms-marco-MiniLM-L-6-v2

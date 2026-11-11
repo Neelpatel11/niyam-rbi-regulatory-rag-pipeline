@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+*.egg-info/
+dist/
+build/
+
+# Local data, caches, models
+data/
+.pytest_pgdata/
+*.onnx
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Node
+web/node_modules/
+web/.next/
+web/out/
+web/next-env.d.ts
+*.tsbuildinfo
+
+# Eval scratch
+evals/candidates.jsonl
+evals/results/*.json
+!evals/results/.gitkeep
+
+# Terraform
+infra/terraform/.terraform/
+infra/terraform/*.tfstate*
+infra/terraform/*.tfvars
+!infra/terraform/terraform.tfvars.example
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
