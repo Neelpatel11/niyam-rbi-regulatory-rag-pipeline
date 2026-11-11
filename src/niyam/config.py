@@ -67,7 +67,9 @@ class Settings(BaseSettings):
     langfuse_enabled: bool = False
     prices_file: Path | None = None
 
-    fetch_user_agent: str = "NiyamBot/0.1 (+https://github.com/Neelpatel11/niyam-rbi-regulatory-rag-pipeline)"
+    fetch_user_agent: str = (
+        "NiyamBot/0.1 (+https://github.com/Neelpatel11/niyam-rbi-regulatory-rag-pipeline)"
+    )
     fetch_min_delay_s: float = 2.0
     fetch_timeout_s: float = 60.0
     fetch_cache_max_age_s: float = 72000.0

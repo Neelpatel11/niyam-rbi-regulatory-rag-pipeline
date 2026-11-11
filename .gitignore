@@ -18,8 +18,6 @@ data/
 *.onnx
 
 # Secrets
-.env
-.env.*
 !.env.example
 
 # Node
@@ -44,4 +42,5 @@ infra/terraform/*.tfvars
 .DS_Store
 Thumbs.db
 .idea/
-.vscode/
+config.bat
+node_modules
